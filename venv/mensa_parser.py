@@ -1,0 +1,46 @@
+#Author: Allan Fodi
+
+import json, requests
+from datetime import datetime
+
+class MensaParser:
+    def __init__(self,url):
+        self.url = url;
+        self.mlist = self.__parse_url();
+
+    #parses the url in json format and gives back a list with all the days and its menues
+    def __parse_url(self):
+        request = requests.get(self.url)
+        raw_data = str(request.content)[2:-1]
+        #convert the raw data into a json compliant dictionary
+        raw_string = raw_data.replace(r'\\"', r"", 4)
+        j_data = json.loads(raw_string)
+
+        #add all the daydata in a list and ignore weekend
+        list = [];
+        for x in j_data["wochentage"]:
+            if int(x["datum"]["wochentag"]) < 6:
+                list.append(x)
+        return list
+
+    #gives entry with respective date
+    def get_offer_for_date(self,date):
+        weekday = date.weekday()
+        date = date.strftime("%d.%m.%Y")
+        angebote = {}
+        #read in the mensa offer into a dict
+        for x in self.mlist:
+            if x["datum"]["data"] == date:
+                angebote["datum"] = date
+                angebote["weekday"] = str(weekday)
+                for y in x["datum"]["angebote"]:
+                    angebote["angebot" + str(y["id"] + 1)] = y["beschreibung"]
+        return angebote
+
+    #checks if mensa is open or closed and returns the respective boolean
+    def is_open(self):
+        if datetime.now().hour > 11 and datetime.now().hour < 14:
+            return True
+        else:
+            return False
+
