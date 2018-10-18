@@ -1,4 +1,6 @@
-from mensa_parser import MensaParser
+#Author: Allan Fodi
+
+rom mensa_parser import MensaParser
 from datetime import datetime
 
 def main():
